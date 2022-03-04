@@ -1,0 +1,546 @@
+{% extends 'base.html' %}
+{% block content %}
+<br>
+    <div style="text-align: center; padding: 10px; ">
+        <label for="choose_param" class="vehicle_form_label"> Switch Parameter
+            <select name="choose_param" id="parameterJump" onchange="ParamQuickJump(this.value)">
+                {% for key, value in all_rational.items() %}
+                    {% if param_name == value %}
+                        <option value="{{vehicle_id}}/{{key}}" selected>{{value}}</option>
+                    {% else %}
+                        <option value="{{vehicle_id}}/{{key}}">{{value}}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+    <div style="text-align: center">
+    <form method="POST">
+
+        <input type="text" name="addNewParam" id="addNewParam">
+        <button type="submit" class="btn btn-primary btn-cbh" style="height: 30px; margin-bottom: 4px; line-height: 0" onclick=ParamQuickJump(document.getElementById('addNewParam').value)><i class="far fa-plus-square"></i> Add New Parameter</button>
+    </form>
+    </div>
+<div class="container">
+<div id="canErrors" class="capture-can-error"></div>
+
+    <div style="display: none" id="focuser"></div>
+
+         <div class="row">
+            <div class="row justify-content-center" >
+               <div class="alert alert-danger" role="alert" style="text-align: center;" id="capture_status">
+                    Not Capturing
+                </div>
+            </div>
+
+     <div class="row justify-content-center" style="background-color: #e5e5e5; border-radius: 2px 2px 15px 15px">
+        <div class="col">
+            <b>Total HDD Space: </b> <span id="hdd_space_total">{{total_disk}} GB</span>
+        </div>
+        <div class="col">
+            <b>Free  HDD Space: </b><span id="free_hdd_space">{{free_disk}} GB</span>
+        </div>
+    </div>
+             <hr>
+    <div class="row flex-grow-1">
+
+        <div class="col live-readout">
+            <div class="row justify-content-center">
+                <div class="col" style="text-align: center">
+                    <h3>Capture Focus: <u><span id="parameter_name"> {{param_name}} </span></u></h3>
+                </div>
+            </div>
+             <div class="row">
+                 <div style="background-color: #cecece;  text-align: center;"><b> Video Preview(s): </b></div><br>
+                 <div class="col" id="video_section" style="height: 150px;; text-align: center"></div>
+
+            </div>
+
+
+
+            <div class="row justify-content-center">
+                <div class="col">
+                    <b>Appx. Logged Lines: </b><span id="logged_lines">0</span>
+                </div>
+               <div class="col-4">
+                    <b>Vehicle VIN: </b><span id="vehicle_vin"> {{vehicle_vin}} </span>
+                </div>
+            </div>
+            <hr>
+            <div class="row justify-content-center">
+                <div class="col">
+                    <b>Active Cans: </b> <span id="all_active_cans"> Null </span>
+                </div>
+                <div class="col">
+                    <b>Active IPs: </b> <span id="active_recording_ips"> Null </span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <b>Log Directory: </b><span id="log_directory">Null</span>
+                </div>
+                <div class="col">
+                    <b>Temp Log(s) Filename(s): </b><span id="can_log_filename">Null</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+   <hr style="color: white">
+    <div class="row justify-content-center" style="text-align: center">
+        <div class="col">
+            <a href="#" id=start_data><button class="btn btn-primary" onclick="start_sending()" style="margin: 5px"> <i class="fas fa-play"></i> Start Data Collection</button></a>
+
+            <a href="#" ><button id="marker_a_button" class="btn btn-success" onclick="SetMarkA()" style="margin: 5px"><i class="fas fa-marker"></i> Set Marker A</button></a>
+            <a href="#" ><button id="marker_b_button" class="btn btn-success" onclick="SetMarkB()" style="margin: 5px"><i class="fas fa-marker"></i> Set Marker B</button></a>
+
+        </div>
+        <div class="col">
+            <a href="#" id=stop_data><button class="btn btn-danger" onclick="StopCapturing()" style="margin: 5px"><i class="fas fa-stop"></i> Stop Data Collection</button></a>
+            <div aria-live="polite" aria-atomic="true" style="position: relative">
+                <div class="toast bg-danger text-white fade" id='warning_toast' style="position: absolute; left: -100%">
+                    <div class="toast-body">
+                        Please select at least one device to capture from
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr style="color: white; margin-top: 10px; margin-bottom: 10px">
+    <h5 style="text-align: center; color: white; margin: 5px">Phone Selection </h5>
+        <div class="row justify-content-center" style="text-align: center;">
+            {% for phone in all_phones %}
+                <div class="col">
+                    <button class="btn btn-primary btn-cbh" onclick="test_ip(this,'{{phone.phone_ip}}')" style="margin: 5px" data-bs-toggle="modal" data-bs-target="#video_confirm_modal">
+
+                       <i class="fas fa-mobile-alt"></i>  <b>{{phone.friendly_name}}: </b>
+                        {{phone.phone_ip}}
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    <br>
+                 <div aria-live="polite" aria-atomic="true" style="pointer-events: none">
+        <div class="toast bg-success text-white fade" id='cap_toast' style="position: absolute; pointer-events: none;">
+            <div class="toast-body" style="pointer-events: none">
+                Screen Capturing Ready
+            </div>
+        </div>
+    </div>
+    <div aria-live="polite" aria-atomic="true" style="pointer-events: none">
+        <div class="toast bg-warning text-white fade" id='cap_warning_toast' style="position: absolute; pointer-events: none">
+            <div class="toast-body" style="pointer-events: none">
+                Please enter a valid IP
+            </div>
+        </div>
+    </div>
+    <div class="row" style="color: white; text-align: center">
+        <div class="col">
+                        Enter Screen Capture IP
+    <input id="screen_cap_ip">
+            <button class="btn btn-primary btn-cbh" onclick="enableScreenCapture()" style="margin: 10px"><i class="fas fa-desktop"></i> Enable Screen Cap</button>
+        </div>
+    </div>
+    <hr style="color: white; margin-top: 10px; margin-bottom: 10px">
+    <div class="row">
+        <button class="btn finalize-btn flex-grow-1" onclick="GetNumOfFiles()" data-bs-toggle="modal" data-bs-target="#finalize_capture_modal"><i class="fas fa-check-circle"></i>  All Capturing Complete </button>
+    </div>
+
+</div>
+
+<br>
+<span style="color: white">
+** You may use the spacebar to set markers while capturing
+</span>
+
+
+<div style="visibility: hidden; width:0px; height: 0px" id="active_phone_ip" value=""></div>
+
+
+
+<!-- Video Preview Modal -->
+<div class="modal fade" id="video_confirm_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Video Preview</h5>
+      </div>
+      <div class="modal-body" style="height: 500px">
+        <iframe class="embed-responsive-item" src="" id="video" style="width: 640px; height: 480px; display: block; margin: auto"></iframe>
+      </div>
+      <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="VideoNotWorking()">Video Failed</button>
+            <button type="button" class="btn btn-success btn-cbh" data-bs-dismiss="modal" onclick="VideoWorking()">Video Working</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Finalize Capture Modal -->
+<div class="modal fade" id="finalize_capture_modal" data-bs-keyboard="false" tabindex="-1" aria-labelledby="finalize_capture" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="finalize_capture">Finalize Capture</h5>
+      </div>
+      <div class="modal-body" id='finalize_modal_body"'style="height: 500px; overflow-y: scroll">
+
+          <div class="row" >
+              <h2><u>Videos</u>: <span id="video_total">0</span></h2>
+            <div class="col" id="video_row">
+
+            </div>
+        </div>
+          <hr>
+          <div class="row">
+              <h2> <u>Logs</u>: <span id="log_total">0</span></h2>
+            <div class="col" id="log_row">
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-cbh" onclick="Finalize()">Finalize Parameter</button>
+      </div>
+    </div>
+  </div>
+    <br>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="finish_up_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body" style="align-content: center; text-align: center">
+        <h2>Finishing Capture Session</h2>
+          <div class="spinner-border text-info" role="status" id="spinner">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+          <br>
+              <div class="capture-can-error" id="fatalError"></div>
+          <div id="error_readout" style="background-color: rgba(140,69,69,0.73); color: #3a0000; font-weight: bold; padding: 10px; display: none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type=text/javascript>
+    let all_video_sources = []
+    let capture_in_progress = false
+    let last_ip = ""
+    let last_ip_button = null
+    let marker_a_button = document.getElementById("marker_a_button")
+    let marker_b_button = document.getElementById("marker_b_button")
+    let screen_cap_ip = null
+    let fatalError = false
+    let videoSection = document.getElementById('video_section')
+    let videoSetup = false
+
+    window.onbeforeunload = function(){
+        if(capture_in_progress){
+            StopCapturing()
+        }
+    };
+
+    $(document).ready(function(){
+
+        console.log(all_video_sources)
+        document.getElementById("canErrors").style.display = 'none'
+        document.getElementById("fatalError").style.display = 'none'
+        marker_a_button.hidden = true
+        marker_b_button.hidden = true
+        $("#warning_toast").toast({
+            autohide: true
+        });
+          $("#cap_toast").toast({
+            autohide: true
+        });
+    });
+
+    function VideoNotWorking(){
+        document.getElementById('video').src = '';
+        last_ip_button.classList.remove('ip_highlighted')
+        let idx = all_video_sources.indexOf(last_ip)
+            if(idx > -1){
+                all_video_sources.splice(idx, 1)
+            }
+        document.getElementById('focuser').focus()
+        // last_ip_button.blur()
+        last_ip_button = null
+        window.blur()
+    }
+
+    function VideoWorking(){
+        document.getElementById('video').src = '';
+        all_video_sources.push(last_ip)
+        document.getElementById('focuser').focus()
+        last_ip_button = null
+        last_ip = null
+        // window.blur()
+    }
+        // STOP CAPTURING DATA
+    function StopCapturing(){
+        if(!capture_in_progress){return}
+        videoSetup = false;
+        videoSection.innerHTML = ""
+        $('#finish_up_modal').modal('toggle')
+        WaitForFinish()
+        document.getElementById('start_data').style.display = 'block'
+        marker_a_button.hidden = true
+        marker_b_button.hidden = true
+        marker_a_button.classList.remove('marker-btn')
+        marker_b_button.classList.remove('marker-btn')
+        let capture_status = document.getElementById("capture_status")
+        capture_status.classList.remove('alert-success')
+        capture_status.classList.add('alert-danger')
+        capture_status.innerHTML = "Not Capturing"
+        $(function() {
+            $.getJSON('/stop_capture',
+                function(data) {
+            });
+            capture_in_progress = false;
+            window.clearInterval(window.pullInterval)
+            return false
+        });
+    }
+
+    function GetNumOfFiles() {
+       $(function() {
+           let log_info = document.getElementById("log_row")
+           let video_info = document.getElementById("video_row")
+           log_info.innerHTML = ""
+           video_info.innerHTML = ""
+           let log_total_readout = document.getElementById("log_total")
+           let video_total_readout = document.getElementById("video_total")
+            $.getJSON('/get_capture_amount',
+                function(data) {
+                log_count = Object.keys(data['logs']).length;
+                video_count = Object.keys(data['videos']).length;
+                for(i = 0; i < log_count; i++){
+                    log_info.innerHTML = (log_info.innerHTML +
+                        "<div class='row'>"+ parseInt(i+1) + ": " + data['logs'][i] + "</div>")
+                }
+                 for(i = 0; i < video_count; i++){
+                    video_info.innerHTML = (video_info.innerHTML +
+                        "<div class='row'>"+ parseInt(i+1) + ": " + data['videos'][i] + "</div>")
+                    }
+                 log_total_readout.innerHTML = log_count;
+                 video_total_readout.innerHTML = video_count;
+            });
+            return false
+        });
+    }
+
+    function Finalize(){
+        let id = window.location.toString().split('/')[4]
+        $.ajax({
+            type: "POST",
+            url: "/get_capture_amount",
+        });
+        window.location = "/vehicles/select?vehicle_id=" + id.toString()
+    }
+
+    function SetMark(markType){
+        let mark = {mark: markType}
+            $.ajax({
+                type: "POST",
+                url: "/set_mark",
+                data : JSON.stringify(mark),
+                contentType: "application/json"
+            });
+    }
+
+    function PullLive(){
+        window.addEventListener('keydown', function(e){
+            if(e.keyCode == 20){
+                e.preventDefault()
+                let marker = document.getElementsByClassName('marker-btn')[0]
+                marker.click()
+            }
+        })
+       window.pullInterval = window.setInterval(function(){$.ajax({
+                url: '/param_capture_readout',
+                type: 'GET',
+                success: function(response) {
+                    console.log(response['active_recording_ips'])
+                    if(!videoSetup){
+                       for(var i = 0; i < response['active_recording_ips'].length; i++){
+                        let newDiv = document.createElement("img")
+                            newDiv.classList.add("capture-video-preview")
+                           newDiv.id = response['active_recording_ips'][i]
+                           videoSection.appendChild(newDiv)
+                        }
+                       videoSetup = true
+                    }
+
+                    // delay to initialize new elements because yay JS....
+                    setTimeout(function(){
+
+                        for(var i = 0; i < response['active_recording_ips'].length; i++){
+                           let element = document.getElementById(response['active_recording_ips'][i])
+                            if(screen_cap_ip !== null){
+                                screen_cap_ip = screen_cap_ip.toString()
+                            }
+                           if(response['active_recording_ips'][i] === screen_cap_ip){
+                                element.src = "/static/images/screen_temp.jpg?random=" + new Date().getTime()
+                           } else {
+                                element.src = "/static/images/" + response['active_recording_ips'][i] + "temp.jpg?random=" + new Date().getTime()
+                           }
+                        }
+
+
+                        document.getElementById("active_recording_ips").innerHTML = response['active_recording_ips']
+                        document.getElementById("log_directory").innerHTML= response['log_directory_path']
+                        let allLogs = response['can_log_filename'].toString().split(",")
+                        let logString = "<br>"
+                        for(var i = 0; i < allLogs.length; i++){
+                             logString = logString + allLogs[i] + "<br>"
+                        }
+                        document.getElementById("can_log_filename").innerHTML = logString
+                        document.getElementById("can_log_filename").innerHTML
+                        document.getElementById("logged_lines").innerHTML = response['logged_lines_count']
+                        document.getElementById("all_active_cans").innerHTML = response['active_cans']
+                        if(response['can_errors'] !== ""){
+                            document.getElementById('canErrors').style.display = 'block'
+                            document.getElementById("canErrors").innerHTML = response['can_errors'] + " busses not connected!"
+                        }
+                        if(response['fatal_can_error'] !== ""){
+                            fatalError = true
+                            StopCapturing()
+                            document.getElementById('fatalError').style.display = 'block'
+                            document.getElementById('spinner').style.display = 'none'
+                            document.getElementById('fatalError').innerHTML = response['fatal_can_error'] + "<br><br> Refresh Page to Start New Capture"
+                        }
+                    }, 100)
+
+                },
+                error: function(error) {
+                    console.log("ERROR")
+                    console.log(error);
+                }
+            })}, 500);
+    }
+
+
+    function WaitForFinish(){
+        let error_readout = document.getElementById("error_readout")
+               window.waitInterval = window.setInterval(function(){$.ajax({
+                url: '/wait_for_finish',
+                type: 'GET',
+                success: function(response) {
+                    if(response['error'] !== ""){
+                        error_readout.style.display = "block"
+                        error_readout.innerHTML = response['error']
+                    }
+                    if(response['status'] === false){
+                        return
+                    } else {
+                        videoSection.innerHTML = ""
+                        videoSetup = false
+                        error_readout.style.display = "none"
+                        window.clearInterval(window.waitInterval)
+                        document.getElementById("canErrors").style.display = 'none'
+                        if(!fatalError) {
+                            $('#finish_up_modal').modal('toggle')
+                        }
+                    }
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })}, 500);
+    }
+
+    // START CAPTURING DATA
+    function start_sending() {
+        let capture_status = document.getElementById("capture_status")
+        let all_needed_devices = []
+        let all_actives = document.getElementsByClassName('ip_highlighted')
+        for(var i = 0; i < all_video_sources.length; i ++){
+            all_needed_devices.push(all_video_sources[i])
+        }
+        let phone_ip = document.getElementById('active_phone_ip').innerHTML
+        let phone_set = true
+        if(all_needed_devices.length <= 0 && screen_cap_ip === null){
+            if(screen_cap_ip === null){
+                 phone_set = false
+                $('#warning_toast').toast('show')
+                return null
+            }
+            phone_set = false
+            $('#warning_toast').toast('show')
+            return null
+        }
+        capture_status.classList.remove('alert-danger')
+        capture_status.classList.add('alert-success')
+        capture_status.innerHTML = "<b>----- CAPTURING -----</b>"
+        capture_in_progress = true
+        console.log(all_video_sources)
+        document.getElementById('start_data').style.display = 'none'
+        marker_a_button.hidden = false
+        marker_a_button.classList.add('marker-btn')
+        setTimeout(function(){
+            var dict = {phone_ips : all_needed_devices, phone_set: phone_set, screen_cap_ip: screen_cap_ip}
+            $.ajax({
+                type: "POST",
+                url: "/start_capture",
+                data : JSON.stringify(dict),
+                contentType: "application/json",
+            });
+        }, 100)
+        PullLive()
+    }
+
+    function SetMarkA(){
+        marker_a_button.classList.remove('marker-btn')
+        marker_b_button.classList.add('marker-btn')
+        marker_a_button.hidden = true
+        marker_b_button.hidden = false
+        SetMark("a")
+    }
+    function SetMarkB(){
+        marker_b_button.classList.remove('marker-btn')
+        marker_a_button.classList.add('marker-btn')
+        marker_b_button.hidden = true
+        marker_a_button.hidden = false
+        SetMark("b")
+    }
+
+    function test_ip(invoker, ip_addr) {
+        last_ip = ip_addr
+        last_ip_button = invoker
+        if(invoker.classList.contains('ip_highlighted')){
+            invoker.classList.remove('ip_highlighted')
+        } else {
+            invoker.classList.add('ip_highlighted')
+            // invoker.blur()
+        }
+        document.getElementById('video').src = '';
+        document.getElementById('video').src = 'http://' + ip_addr.toString() + ':4747/video?640x480';
+        document.getElementById('active_phone_ip').innerHTML = ip_addr
+    }
+
+    function ParamQuickJump(param){
+        document.location.href="/parameter/" + param
+    }
+
+  function enableScreenCapture () {
+
+    screen_cap_ip = document.getElementById('screen_cap_ip').value
+      if(!all_video_sources.includes(screen_cap_ip)){
+            all_video_sources.push(screen_cap_ip)
+      }
+      if(screen_cap_ip === ""){
+          $('#cap_warning_toast').toast('show')
+          return;
+      }
+
+       $('#cap_toast').toast('show')
+  }
+</script>
+
+{% endblock %}
+
+

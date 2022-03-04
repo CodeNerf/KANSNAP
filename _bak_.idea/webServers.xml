@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="e71220ae-db5d-4055-a9c8-02c2b8a0ffa0" name="Local" url="http://localhost">
+        <fileTransfer mountedRoot="C:\Users\tom\PycharmProjects\canSNARE" accessType="MOUNT" port="0" />
+      </webServer>
+    </option>
+  </component>
+</project>

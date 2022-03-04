@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+    <div id="vehicle_info">
+        <div class="vehicle_form_label" style="text-align: center">
+            <h2>Vehicle Info</h2>
+        </div>
+        <form action="/vehicle_setup" method="post">
+        <div class="row row-cols-auto">
+            <div class="col">
+                    <label for="vehicle_year" class="vehicle_form_label"> Vehicle Year
+                        <select name="vehicle_year" class="form-select">
+                            {% for i in range(15,0,-1) %}
+                                {% set year = i + 2008 %}
+                                <option value="{{ year }}" {% if form_data['vehicle_year'] is defined %}   {{ 'selected="selected"' if year==form_data['vehicle_year']| int }} {% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+            </div>
+            <div class="col">
+                    <label for="vehicle_make" class="vehicle_form_label"> Vehicle Make
+                        <select name="vehicle_make" class="form-select">
+                            {% for key, car in config_dictionary['vehicle_makes'].items() %}
+                                <option value="{{ car }}" {{ 'selected="selected"' if key==form_data['vehicle_make'] }}>{{ car }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+            </div>
+        </div>
+        <br>
+        <div class="row row-cols-auto">
+            <div class="col">
+                <label for="vehicle_model" class="vehicle_form_label">Vehicle Model</label>
+                <input class="form-control" type="text" name="vehicle_model" id="vehicle_model" value="{{ form_data['vehicle_model'] }}">
+            </div>
+            <div class="col">
+                <label for="vehicle_vin" class="vehicle_form_label">Vehicle VIN</label>
+                <input class="form-control" type="text" name="vehicle_vin" id="vehicle_vin" onload="vin_test(this.value)" onkeyup="count_chars(this.value)" onchange="vin_test(this.value)" value="{{ form_data['vehicle_vin'] }}">
+            </div>
+            <div class="col">
+                 <label for="vin_chars" class="vehicle_form_label"># of Chars</label>
+                    <input class="form-control" readonly id="vin_chars" value="0" style="border: none; width: 50px; color: black">
+            </div>
+        </div>
+        <br>
+        <div class="row row-cols-auto">
+            <div class="col">
+                <label for="vehicle_transmission" class="vehicle_form_label">Vehicle Transmission Type
+                    <select class="form-select" name="vehicle_transmission">
+                        <option value="Automatic" selected="selected">Automatic</option>
+                        <option value="Manual">Manual</option>
+                    </select>
+                </label>
+            </div>
+            <div class="col-sm-9">
+                 <label for="networks_list" class="vehicle_form_label">CAN Networks (Comma Separated)
+                    <input class="form-control" type="text" name="networks_list">
+                </label>
+            </div>
+        </div>
+         <br>
+        <label for="vehicle_options" class="vehicle_form_label">Vehicle Options & Notes</label>
+        <textarea class="form-control" name="vehicle_options" id="vehicle_options" rows="10" cols="50">{{ form_data['vehicle_options'] }}</textarea>
+            <div id="generate_warning" style="color: red" hidden>Please enter a valid VIN</div>
+         <br>
+            <button class="btn btn-primary btn-cbh" type="submit" id="vehicle_info_submit" disabled>Generate Vehicle</button>
+        </form>
+    </div>
+</div>
+
+    <script>
+
+        function stop_the_test() {
+            document.getElementById('iframe_video').src = '';
+        }
+
+        function validateVin(vin) {
+            if (vin === "11111111111111111") {
+                return false;
+            }
+            if (!vin.match("^([0-9a-hj-npr-zA-HJ-NPR-Z]{10,17})+$")) {
+                return false;
+            }
+            const letters = [{k: "A", v: 1}, {k: "B", v: 2}, {k: "C", v: 3},
+                {k: "D", v: 4}, {k: "E", v: 5}, {k: "F", v: 6}, {k: "G", v: 7},
+                {k: "H", v: 8}, {k: "J", v: 1}, {k: "K", v: 2}, {k: "L", v: 3},
+                {k: "M", v: 4}, {k: "N", v: 5}, {k: "P", v: 7}, {k: "R", v: 9},
+                {k: "S", v: 2}, {k: "T", v: 3}, {k: "U", v: 4}, {k: "V", v: 5},
+                {k: "W", v: 6}, {k: "X", v: 7}, {k: "Y", v: 8}, {k: "Z", v: 9}];
+            const weights = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2];
+            const exclude = ["I", "O", "Q"];
+            let val = 0;
+            for (let idx = 0; idx < vin.length; idx++) {
+                const item = vin.charAt(idx).toUpperCase();
+                if (exclude.includes(function (x) {
+                    return x === item;
+                })) {
+                    return false;
+                }
+                const pos = (item.match("^[0-9]+$") != null) ? parseInt(item) : letters.filter(function (letter) {
+                    return letter.k === item;
+                })[0].v;
+                val += (pos * weights[idx]);
+            }
+            const checksum = (val % 11);
+            return (vin.charAt(8) === (checksum < 10 ? checksum.toString() : "X"));
+        }
+
+        function vin_test(vin) {
+            let vin_input = document.getElementById("vehicle_vin")
+            if (validateVin(vin)) {
+                document.getElementById("vehicle_info_submit").disabled = false
+                vin_input.style.borderColor = "green";
+                document.getElementById("generate_warning").hidden = true
+            } else {
+                document.getElementById("vehicle_info_submit").disabled = true
+                document.getElementById("generate_warning").hidden = false
+                vin_input.style.borderColor = "red";
+            }
+        }
+
+        function count_chars(vin_input) {
+            let write_here = document.getElementById("vin_chars");
+            write_here.value = vin_input.length;
+        }
+
+    </script>
+
+{% endblock %}

@@ -1,0 +1,12 @@
+import views.vehicle_setup
+import views.vehicles
+import views.main
+import views.select_vehicle
+import views.rationalize
+import views.parameters
+import views.capture_page
+import views.phone_setup
+import views.playback
+import views.upload
+import views.edit_parameters
+import views.carhax

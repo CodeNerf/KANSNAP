@@ -1,0 +1,476 @@
+{#{%  extends 'base.html' %}#}
+{#{%  block content %}#}
+{#<br>#}
+{##}
+{#    {% if not all_signals %}#}
+{#        {%  if not files_dir %}#}
+{#            <div class="container" style="text-align: center; color: white">#}
+{#                <form method="POST"  enctype="multipart/form-data">#}
+{#                  <div class="form-group">#}
+{#                    <label for="exampleFormControlFile1">Enter VIN</label>#}
+{#                    <input type="text" class="form-control-file" name="vin" id="exampleFormControlFile1" webkitdirectory directory multiple>#}
+{#                  <button type="submit" class="btn btn-primary btn-cbh">Submit Chosen</button>#}
+{#                  </div>#}
+{#                </form>#}
+{#            </div>#}
+{#        {%  endif %}#}
+{#    {%  else %}#}
+{#        <div class="container" style="text-align: center; color: white">#}
+{#            <form method="POST"  enctype="multipart/form-data">#}
+{#               Select Parameter to View#}
+{#                <select name="param_selection">#}
+{#                    {%  for key,value in all_signals.items() %}#}
+{#                        <option value="{{ value }}">{{ key }} - {{ value }}</option>#}
+{#                    {%  endfor %}#}
+{#                </select>#}
+{#            <button type="submit" class="btn btn-primary btn-cbh">Choose Parameter</button>#}
+{#            </form>#}
+{#        </div>#}
+{#    {%  endif %}#}
+{##}
+{#    {%  if files_dir %}#}
+{#        <div class="container">#}
+{#        <br>#}
+{#            <div class="row">#}
+{#                <div class="col">#}
+{#                    <h5 style="color: white">Select Video</h5>#}
+{#                    <select id="video_selection" onchange="SelectVideo()">#}
+{#                        {% for video in all_videos %}#}
+{#                            <option value="{{ video }}">{{ video }}</option>#}
+{#                        {%  endfor %}#}
+{#                    </select>#}
+{#                    <br><br>#}
+{#                     <video id="video_player" width="640" height="480" class=”video-js” data-setup=’{}’ preload>#}
+{#                        <source id="video_source" src="" type="video/mp4">#}
+{#                     </video>#}
+{##}
+{#                    <input type="range" min="0" max="100" value="0" class="video-slider" id="videoSlider" onmouseup="ResumePlayback(this)" onmousedown="PrepareForChange(this)" onchange="UpdatePlayback(this)"><br><br>#}
+{##}
+{#                    <span style="color: white">Loop</span> <input type="checkbox" id="loopToggle" onchange="SetLooping()" checked>#}
+{#                    <span style="color: white">Clear On End/Change</span> <input type="checkbox" id="clearToggle" onchange="SetClearOnEnd()">#}
+{#                </div>#}
+{#                <div class="col" style="background-color: white">#}
+{#                    <div class="row">#}
+{#                       <div class="col">#}
+{#                            <span>Choose Log</span>#}
+{#                        <br>#}
+{#                            <select id="logSelection" onchange=ImportData()>#}
+{#                                {%  for log in all_logs %}#}
+{#                                    <option value="{{ log }}">{{ log }}</option>#}
+{#                                {% endfor %}#}
+{#                            </select>#}
+{#                        </div>#}
+{#                        <div class="col">#}
+{#                            <span>Enter Starting Timestamp</span>#}
+{#                            <input name="timestampStart" id="timestampStart" type="text">#}
+{#                        </div>#}
+{##}
+{#                    </div>#}
+{#                    <table id="logReader" class="table table-striped">#}
+{#                        <thead>#}
+{#                            <tr id="headers">#}
+{#                                <th>Network</th>#}
+{#                                <th>Arb ID</th>#}
+{#                                <th>Byte 1</th>#}
+{#                                <th>Byte 2</th>#}
+{#                                <th>Byte 3</th>#}
+{#                                <th>Byte 4</th>#}
+{#                                <th>Byte 5</th>#}
+{#                                <th>Byte 6</th>#}
+{#                                <th>Byte 7</th>#}
+{#                                <th>Byte 8</th>#}
+{#                            </tr>#}
+{#                        </thead>#}
+{#                            <tbody id="tableBody">#}
+{#                                <tr id="arbID">#}
+{#                                    <td id="rowNetwork"></td>#}
+{#                                    <td id="rowArbID"></td>#}
+{#                                    <td id="byte1"></td>#}
+{#                                    <td id="byte2"></td>#}
+{#                                    <td id="byte3"></td>#}
+{#                                    <td id="byte4"></td>#}
+{#                                    <td id="byte5"></td>#}
+{#                                    <td id="byte6"></td>#}
+{#                                    <td id="byte7"></td>#}
+{#                                    <td id="byte8"></td>#}
+{#                                </tr>#}
+{#                        </tbody>#}
+{#                    </table>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{#    {% endif %}#}
+{#    <br>#}
+{#<button onclick="StreamData()">Play</button>#}
+{#    <br>#}
+{#    <button onclick="Pause()">Pause</button>#}
+{#<br>#}
+{##}
+{##}
+{#<div class="container white-bg" style="width: 50%; margin-right: 2%">#}
+{##}
+{#</div>#}
+{##}
+{#{% endblock %}#}
+{##}
+{#{% block scripts %}#}
+{#    {%  if files_dir %}#}
+{#        <script>#}
+{#            let videoPlayer = document.getElementById("video_player")#}
+{#            let video = document.getElementById("video_source")#}
+{#            let videoSelection = document.getElementById("video_selection").value#}
+{#            let file = "/static/analysis/" + videoSelection#}
+{#            $(document).ready(function() {#}
+{#                video.src = file#}
+{#                videoPlayer.load()#}
+{#            });#}
+{#            function SelectVideo(){#}
+{#                videoSelection = document.getElementById("video_selection").value#}
+{#                file = "/static/analysis/" + videoSelection#}
+{#                video.src = file#}
+{#                videoPlayer.load()#}
+{##}
+{#            }#}
+{#        </script>#}
+{#    {%  endif %}#}
+{##}
+{##}
+{##}
+{#    <script>#}
+{#    let pullRate = 100#}
+{#    let streamIncrement = 200#}
+{#    let streamIndex = 0#}
+{#    let streamStart = 0#}
+{#    let streamMax = 0#}
+{#    let logReader = document.getElementById("logReader")#}
+{#    let tableBody = document.getElementById("tableBody")#}
+{#    let buffering = false#}
+{#    let timestampStart = 0#}
+{#    let videoTimeSlider = document.getElementById('videoSlider')#}
+{#    let playbackPaused = false;#}
+{#    let streaming = false;#}
+{#    let clearOnEnd = false;#}
+{##}
+{##}
+{#    $(document).ready(function() {#}
+{#        videoPlayer.load()#}
+{#        setTimeout(function(){#}
+{#            console.log(videoPlayer.duration)#}
+{#            videoTimeSlider.max = videoPlayer.duration#}
+{#        }, 1000)#}
+{#        SetAllVars()#}
+{#        $('#logReader').DataTable({#}
+{#            deferRender:    true,#}
+{#            scrollY:        400,#}
+{#            scrollCollapse: true,#}
+{#            scroller:       true,#}
+{#            ordering: false#}
+{#        });#}
+{##}
+{#        ImportData()#}
+{#    } );#}
+{##}
+{#    function ImportData(){#}
+{#        let logSelection = document.getElementById("logSelection").value#}
+{#        LoadFile(logSelection)#}
+{##}
+{#    }#}
+{##}
+{#    function LoadFile(filename){#}
+{#        $('#logReader').DataTable().clear()#}
+{#        $.ajax({#}
+{#            type: "GET",#}
+{#            url: "/carhax/load_initial/" + filename.toString(),#}
+{#            contentType: "application/json"#}
+{#        });#}
+{#    }#}
+{##}
+{#    function StreamData(){#}
+{#        console.log(playbackPaused)#}
+{#        if(playbackPaused){playbackPaused = false;videoPlayer.play();return;}#}
+{#        if(streaming){return}#}
+{#        timestampStart = document.getElementById("timestampStart").value#}
+{#        if(timestampStart === ""){#}
+{#            timestampStart = 0#}
+{#        }#}
+{#          $.ajax({#}
+{#            type: "GET",#}
+{#            url: "/carhax/start_stream/" + timestampStart,#}
+{#            contentType: "application/json",#}
+{#              success: function(data){#}
+{#                streamMax = data.split(",")[0]#}
+{#                streamIndex = parseInt(data.split(",")[1])#}
+{#                let msgPerSec = (parseInt(streamMax) - streamIndex) / videoPlayer.duration#}
+{#                streamIncrement = parseInt(msgPerSec / 10)#}
+{#                  console.log(pullRate)#}
+{#                  console.log(streamIncrement)#}
+{#              }#}
+{#        });#}
+{##}
+{#        // setup video stuff#}
+{#        videoTimeSlider.max = videoPlayer.duration#}
+{##}
+{#        // start the pull interval#}
+{#        window.dataInterval = setInterval(function(){#}
+{#            videoPlayer.onplaying = function(){buffering = false}#}
+{#            if(playbackPaused){return}#}
+{#            if(buffering){return}#}
+{#            videoTimeSlider.value = videoPlayer.currentTime#}
+{#            $.ajax({#}
+{#            type: "GET",#}
+{#            url: "/carhax/stream_data/" + streamIndex.toString() + "/" + streamIncrement.toString(),#}
+{#            contentType: "application/json",#}
+{#            success: function(data){#}
+{#                videoPlayer.onwaiting = function(){#}
+{#                     buffering = true#}
+{#                }#}
+{#                console.log(playbackPaused)#}
+{##}
+{#                ProcessData(JSON.parse(data['data']))#}
+{#                SetVideoElements();#}
+{#                if(!data['status']){#}
+{#                    window.clearInterval(window.dataInterval)#}
+{#                }#}
+{##}
+{#                if(data['looping'] && data['end']){#}
+{#                    console.log("Restarting")#}
+{#                    streamIndex = timestampStart#}
+{#                    videoPlayer.pause()#}
+{#                    videoPlayer.currentTime = 0#}
+{#                    videoPlayer.play()#}
+{#                    if(clearOnEnd){$("#tableBody").find("tr:gt(0)").remove();}#}
+{#                }#}
+{##}
+{##}
+{#                // match the IDX of the end_indx addition in carhax.py#}
+{#                    streamIndex += parseInt(streamIncrement)#}
+{#            }#}
+{##}
+{#            })#}
+{##}
+{#        }, pullRate)#}
+{#        videoPlayer.play()#}
+{#        streaming = true;#}
+{#    }#}
+{##}
+{#    function ProcessData(data){#}
+{#        for(i = 0; i < data.length; i++){#}
+{#            let arbID = data[i][2]#}
+{#            if(!document.getElementById(data[i][1] + "-" + arbID)){#}
+{#                let row = tableBody.insertRow(0)#}
+{#                let cellNetwork = row.insertCell(0)#}
+{#                let cellArb = row.insertCell(1)#}
+{#                row.id = data[i][1] + "-" + arbID#}
+{#                cellNetwork.innerHTML = data[i][1]#}
+{#                cellArb.innerHTML = arbID#}
+{#                cellArb.id = arbID.toString() + '-arb'#}
+{#                cellNetwork.id = arbID.toString() + '-network'#}
+{#                for(var k = 0; k < data[i][3].length; k++){#}
+{#                    let cell = row.insertCell(2 + k)#}
+{#                    cell.id =  arbID.toString() + "-byte-" + (k+1).toString()#}
+{#                    cell.classList.add("steady-byte-display-l1")#}
+{#                    if(data[i][3][k]){#}
+{#                        cell.innerHTML = data[i][3][k]#}
+{#                    } else {#}
+{#                        cell[i][3][k] = ""#}
+{#                    }#}
+{#                }#}
+{#            } else {#}
+{#                // if row exists make changes#}
+{#                let foundRow = document.getElementById(data[i][1] + "-" + arbID)#}
+{#                let children = foundRow.children#}
+{#                let bytes = []#}
+{##}
+{#                // get all the byte cols#}
+{#                for (var j = 0; j < children.length; j++){#}
+{#                    if(children[j].id.includes("byte")){#}
+{#                        bytes.push(children[j])#}
+{#                    }#}
+{#                }#}
+{#                // color the changes#}
+{#                for(var l = 0; l < bytes.length; l++){#}
+{#                    let neededDirection = ""#}
+{#                    let intPrev = parseInt(bytes[l].innerHTML, 16)#}
+{#                    let intNext = parseInt(data[i][3][l], 16)#}
+{#                    if(intNext - intPrev > 0){#}
+{#                        neededDirection = "Greater"#}
+{#                    } else if(intNext - intPrev < 0) {#}
+{#                        neededDirection = "Lesser"#}
+{#                    }#}
+{##}
+{#                    if(data[i][3][l] !== bytes[l].innerHTML){#}
+{#                        if(data[i][3][l]){#}
+{#                          bytes[l].innerHTML = data[i][3][l]#}
+{#                        } else {#}
+{#                            bytes[l].innerHTML = ""#}
+{#                        }#}
+{#                        console.log(bytes[l].className.split("-"))#}
+{#                        let currentClass = bytes[l].className.split("-")[3].split("l")[1]#}
+{#                        let nextClassNum = parseInt(currentClass) +1#}
+{#                        if(nextClassNum > 5){#}
+{#                            nextClassNum = 5;#}
+{#                        }#}
+{#                        if(neededDirection === "Greater"){#}
+{#                            if(bytes[l].className.includes("down")){#}
+{#                                nextClassNum = 1;#}
+{#                            }#}
+{#                            let nextClass = 'up-byte-display-l' + nextClassNum.toString()#}
+{#                            bytes[l].removeAttribute('class')#}
+{#                            bytes[l].classList.add(nextClass)#}
+{#                        } else if (neededDirection === "Lesser"){#}
+{#                            if(bytes[l].className.includes("up")){#}
+{#                                nextClassNum = 1;#}
+{#                            }#}
+{#                            let nextClass = 'down-byte-display-l' + nextClassNum.toString()#}
+{#                            bytes[l].removeAttribute('class')#}
+{#                            bytes[l].classList.add(nextClass)#}
+{#                        }#}
+{##}
+{##}
+{#                        //bump to top#}
+{#                        tableBody.insertBefore(foundRow, tableBody.firstChild)#}
+{#                    }#}
+{#                }#}
+{##}
+{#            }#}
+{#        }#}
+{#    }#}
+{##}
+{##}
+{#    function SetAllVars(){#}
+{#        SetLooping()#}
+{#    }#}
+{#    function Pause(){#}
+{#        videoPlayer.pause()#}
+{#        streamIndex = 0#}
+{#        playbackPaused = true;#}
+{#    }#}
+{##}
+{#    function SetLooping(){#}
+{#        let loopStatus;#}
+{#        if(document.getElementById("loopToggle").checked){#}
+{#            loopStatus = true;#}
+{#        } else {#}
+{#            loopStatus = false;#}
+{#        }#}
+{#        console.log(loopStatus)#}
+{#        let looping = {looping: loopStatus}#}
+{#        $.ajax({#}
+{#            type: "POST",#}
+{#            url: "/carhax-settings",#}
+{#            data : JSON.stringify(looping),#}
+{#            contentType: "application/json"#}
+{#            });#}
+{#    }#}
+{##}
+{#    function SetVideoElements(){#}
+{#        videoTimeSlider.value = videoPlayer.currentTime#}
+{#    }#}
+{##}
+{#    function UpdatePlayback(slider){#}
+{#        slider.addEventListener('mousedown', function (e) {#}
+{#           if(e.button !== 0){#}
+{#               return#}
+{#           }#}
+{#            videoPlayer.currentTime = videoTimeSlider.value#}
+{#            videoTimeSlider.value = videoPlayer.currentTime#}
+{#        });#}
+{##}
+{#    }#}
+{##}
+{#    function PrepareForChange(slider){#}
+{#        slider.addEventListener('mousedown', function (e) {#}
+{#           if(e.button !== 0){#}
+{#               return#}
+{#           }#}
+{#            playbackPaused = true;#}
+{#            videoPlayer.pause()#}
+{#        });#}
+{#    }#}
+{##}
+{#    function ResumePlayback(slider){#}
+{#        slider.addEventListener('mousedown', function (e) {#}
+{#           if(e.button !== 0){#}
+{#               return#}
+{#           }#}
+{#            playbackPaused = false;#}
+{#            if(!streaming){#}
+{#                StreamData()#}
+{#            }#}
+{#            if(clearOnEnd){$("#tableBody").find("tr:gt(0)").remove();}#}
+{#            videoPlayer.play()#}
+{#            setTimeout(function(){#}
+{#                GetNewIdx()#}
+{#            }, 5)#}
+{#        });#}
+{##}
+{##}
+{#    }#}
+{##}
+{#    function ClearOnEnd(){#}
+{#        let tickbox = document.getElementById("clearToggle")#}
+{#        if(tickbox.checked){#}
+{#            clearOnEnd = false;#}
+{#        } else {#}
+{#            clearOnEnd = true;#}
+{#        }#}
+{#    }#}
+{##}
+{#    function GetNewIdx(){#}
+{#        console.log(videoTimeSlider.value)#}
+{#        console.log(videoPlayer.duration)#}
+{#        let videoLoc = (videoTimeSlider.value / videoPlayer.duration)#}
+{##}
+{#        $.ajax({#}
+{#            type: "GET",#}
+{#            url: "/carhax-get-new-idx/" +  videoLoc.toString(),#}
+{#            contentType: "application/json",#}
+{#              success: function(data){#}
+{#                console.log(data)#}
+{#                   streamIndex = parseInt(data)#}
+{#              }#}
+{#        });#}
+{#    }#}
+{##}
+{##}
+{##}
+{#    /// ------- CUSTOM CONTEXT MENU STUFF --------- ///#}
+{##}
+{#    if (document.addEventListener) {#}
+{##}
+{#        document.addEventListener('contextmenu', function(e) {#}
+{#            GetHoveredElements()#}
+{#            e.preventDefault();#}
+{#        }, false);#}
+{#    } else {#}
+{#        document.attachEvent('oncontextmenu', function() {#}
+{##}
+{#            window.event.returnValue = false;#}
+{#        });#}
+{#    }#}
+{##}
+{##}
+{##}
+{#    function GetHoveredElements() {#}
+{#        var element, elements = [];#}
+{#        var old_visibility = [];#}
+{#        while (true) {#}
+{#            element = document.elementFromPoint(event.clientX, event.clientY);#}
+{#            if (!element || element === document.documentElement) {#}
+{#                break;#}
+{#            }#}
+{#            elements.push(element);#}
+{#            old_visibility.push(element.style.visibility);#}
+{#            element.style.visibility = 'hidden'; // Temporarily hide the element (without changing the layout)#}
+{#        }#}
+{#        for (var k = 0; k < elements.length; k++) {#}
+{#            elements[k].style.visibility = old_visibility[k];#}
+{#        }#}
+{#        elements.reverse();#}
+{#        console.log(elements)#}
+{#        return elements;#}
+{#    }#}
+{#    </script>#}
+{##}
+{#{% endblock %}#}

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container white-bg">
+    <div class="row">
+        <div class="col param-header">
+            Set Available Parameters
+            <br>
+        </div>
+    </div>
+    <div class="completed_signal_example">
+    Denotes a completed Signal
+    </div>
+        <form method="POST" id="rationalform">
+            <br>
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-primary" type="button" onclick="ToggleAll()"><i class="fas fa-exchange-alt"></i> Invert Selection</button>
+
+                </div>
+
+                <div class="col">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success btn-cbh" type="button" onclick="MakieBiggie()" data-bs-toggle="modal" data-bs-target="#staticBackdrop"><i class="fas fa-clipboard-check"></i> Rationalize</button>
+                    </div>
+                </div>
+            </div>
+
+            <br>
+        <table id="availParams" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Enabled</th>
+                <th style="text-align: center">Signal Description</th>
+                <th>Signal ID</th>
+                <th>System</th>
+                <th>Units</th>
+                <th>Capture Mode</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{completed_signal_list}}
+            {% for signal in signals %}
+                {% if signal.signal_id|string in cslist %}
+                    <tr class="signal_info" style="background-color: #e3b475">
+                    {% else %}
+                    <tr class="signal_info">
+                {% endif %}
+                    <td>
+                        <div class="form-check">
+                            <input class="form-check-input tb" type="checkbox" name="toggleParam{{signal.signal_id}}" value="toggleParam{{signal.signal_id}}" id="toggleParam{{signal.signal_id}}">
+                        </div>
+                    </td>
+                    <td style="text-align: center">{{signal.signal_description}}</td>
+                    <td id="signal_id">{{signal.signal_id}}</td>
+                    <td>{{signal.system}}</td>
+                    <td>{{signal.units}}</td>
+                    <td>{{signal.capture_mode}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <h2> Submitting Rationalized Fields...</h2>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+var info = JSON.parse({{existing_info | tojson}})
+console.log(info)
+$(document).ready(function() {
+    $('#availParams').DataTable({
+        aLengthMenu: [
+            [10, 25, 50, 100, -1],
+            [10, 25, 50, 100, "All"]
+        ]         ,
+        iDisplayLength: -1
+    });
+
+LoadExisting()
+} );
+
+function MakieBiggie(){
+    $('#availParams').DataTable().page.len(1000).draw()
+    ClearSearch()
+    setTimeout(() => {
+        document.getElementById("rationalform").submit()
+    }, 1000);
+}
+function LoadExisting(){
+    let allParams = document.getElementsByClassName("signal_info")
+    neededKeys = Object.keys(info)
+    for(var i = 0; i < allParams.length; i ++){
+        let selected_id = allParams[i].querySelector("#signal_id").innerHTML
+        if(neededKeys.includes((selected_id))){
+            allParams[i].querySelector(".form-check-input").checked = true
+        }
+    }
+}
+
+function ToggleAll() {
+    let allParams = document.getElementsByClassName("form-check-input tb")
+    for(var i = 0; i < allParams.length; i++){
+        if (allParams[i].checked){
+            allParams[i].checked = false
+        } else {
+            allParams[i].checked = true
+        }
+    }
+}
+
+function ClearSearch(){
+    var table = $('#availParams').DataTable();
+table
+ .search( '' )
+ .columns().search( '' )
+ .draw()
+}
+</script>
+
+{% endblock %}

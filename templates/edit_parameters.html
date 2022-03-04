@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container white-bg">
+
+
+        <br>
+        <table id="availParams" class="table table-striped" style="width:100%">
+        <button class="btn btn-success btn-cbh" onclick="OpenModal(0)">Add New Parameter</button>
+        <thead>
+            <tr>
+                <th style="text-align: center">Signal Description</th>
+                <th>Signal ID</th>
+                <th>System</th>
+                <th>Units</th>
+                <th>Capture Mode</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for signal in signals %}
+                    <tr class="signal_info" style="cursor: pointer" onclick="OpenModal({{ signal.signal_id}})">
+                    <td style="text-align: center">{{signal.signal_description}}</td>
+                    <td>{{signal.signal_id}}</td>
+                    <td>{{signal.system}}</td>
+                    <td>{{signal.units}}</td>
+                    <td>{{signal.capture_mode}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+    <!-- Editing Modal -->
+    <div class="modal fade" id="editSignalModal" data-bs-keyboard="false" tabindex="-1"  aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+
+                <h2 style="text-align: center" id="headerText"> Add Parameter </h2>
+                <form method="POST">
+                    <div class="row">
+                        <div class="col">
+                            <div class="input-group input-group-sm mb-3">
+                                <input class="hidden" id="signalID" value="" style="display: none">
+                                <input class="hidden" name="storedSignalDesc" id='storedSignalDesc' value="" style="display: none">
+                                <span class="input-group-text" id="signalDescriptionLabel">Signal Description</span>
+                                <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="signalDescriptionLabel" id="signalDescriptionInput" name="signalDescription">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <button type='submit' name="new_signal_btn" id='signalEditButton' value="add_new" class="btn btn-success">Add Signal</button>
+                        </div>
+                        <div class="col">
+                            <button type='submit' name="delete_signal_btn" id='signalDeleteButton' value="add_new" class="btn btn-danger">Delete Signal</button>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#availParams').DataTable({
+        aLengthMenu: [
+            [10,25,50,-1],
+            [10,25,50,"All"]
+        ],
+        iDisplayLength: 10
+    });
+} );
+
+
+function OpenModal(signalID){
+    if(signalID > 0){
+        {% for signal in signals %}
+            if(signalID === {{signal.signal_id}}) {
+                document.getElementById("storedSignalDesc").value = "{{ signal.signal_description }}"
+                document.getElementById("signalDeleteButton").style.display = "block"
+                document.getElementById("signalDescriptionInput").value = "{{ signal.signal_description }}"
+                document.getElementById("signalEditButton").innerHTML = "Save Edit"
+                document.getElementById("signalEditButton").setAttribute("name", "edit_signal_btn")
+                document.getElementById("headerText").innerHTML = "Edit Parameter"
+            }
+        {%  endfor %}
+    } else {
+        document.getElementById("signalDeleteButton").style.display = "none"
+    }
+    $('#editSignalModal').modal('toggle')
+}
+
+
+    if ( window.history.replaceState ) {
+        window.history.replaceState( null, null, window.location.href );
+    }
+</script>
+
+{% endblock %}

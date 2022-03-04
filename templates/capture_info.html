@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Capture Info</title>
+    <style>
+        .capture_items_bold{
+            font-weight: bold;
+        }
+        .warning{
+            width: 20px;
+            height: 20px;
+            background: url("/static/gifs/warning.gif") 0 0;
+
+        }
+    </style>
+    <script type="application/javascript">
+        function hide(thing){
+            thing.style.display = "none";
+        }
+    </script>
+
+</head>
+<body>
+<label for="refresh_checkbox"> Auto-Refresh
+    <input type="checkbox" name="refresh_checkbox" id="refresh_checkbox" checked>
+</label>
+{% set total, used, free = hdd %}
+<div>
+    <span>
+        Total HDD Space {{ total // (2**30) }} GB
+    </span>
+</div>
+<div>
+    <span>
+        Used HDD Space {{ used // (2**30) }} GB
+    </span>
+</div>
+<div>
+    <span>
+        Free HDD Space {{ free // (2**30) }} GB
+    </span>
+</div>
+
+{% for key, value in capture.items() %}
+
+
+    {% if key == "can_log_filename" and value != none %}
+        {% set start_location = value.find('/static/captures') %}
+        <a href="{{ value[start_location:] }}" target="_blank">Download Log File</a>
+    {% endif %}
+
+    {% if key == "capturing" %}
+        {% if value %}
+            <script type="application/javascript">
+                document.body.style.backgroundColor = "#7FFF00"
+            </script>
+        {% else %}
+            <script type="application/javascript">
+                document.body.style.backgroundColor = "#B22222"
+            </script>
+        {% endif %}
+    {% endif %}
+
+    {% if key == "capturing" or key == "logged_lines" %}
+        {% set bold = "capture_items_bold" %}
+    {% else %}
+        {% set bold = "capture_items" %}
+    {% endif %}
+    <hr style="border-top: dashed; border-bottom: none; height: 1px">
+
+    {% if key == "bus_logged_lines" %}
+        {% for bus_key, bus_value in value.items() %}
+            {% if bus_value == 0 %}
+                {% set led_class = "warning" %}
+                {% set error_message = "!" %}
+            {% else %}
+                {% set led_class = "" %}
+                {% set error_message = "" %}
+            {% endif %}
+            <div onclick="hide(this);">
+                <span class="{{ led_class }}">{{ error_message }}</span><span>{{ bus_key }} : {{  bus_value }}</span>
+            </div>
+        {% endfor %}
+
+    {% else %}
+
+        <div class="{{ bold }}">
+            <span {{ bold }}>{{ key }} : {{ value }}</span>
+        </div>
+    {% endif %}
+    {% if key == "streams" %}
+        {% for stream in value %}
+            <hr>
+            {% for s_key, s_value in stream.__dict__.items() %}
+                <div>
+                    <span> {{ s_key }}: {{ s_value }}</span>
+                    <img src="/image/last">
+                    {% if s_key == "archived_file" and s_value != none %}
+                        {% set start_location = s_value.find('/static/captures') %}
+                        <a href="{{ s_value[start_location:] }}" target="_blank">Download Capture</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+{% endfor %}
+<script type="application/javascript">
+
+    setTimeout(function(){
+
+        if(document.getElementById("refresh_checkbox").checked) {
+            window.location.reload(1);
+        }
+    }, 5000);
+
+</script>
+</body>
+</html>

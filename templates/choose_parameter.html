@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container white-bg">
+    <div class="row">
+        <div class="col param-header">
+            Choose Parameter To Capture
+            <br>
+        </div>
+    </div>
+        <div class="completed_signal_example">
+    Denotes a completed Signal
+    </div>
+        <form method="POST" id="rationalform">
+            <input type="hidden" name="signal_id" id="signal_id" value="">
+            <br>
+        <table id="availParams" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th style="text-align: center">Signal Description</th>
+                <th>Signal ID</th>
+                <th>System</th>
+                <th>Units</th>
+                <th>Capture Mode</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for signal in signals %}
+                   {% if signal.signal_id|string in cslist %}
+                        <tr class="signal_info" style="background-color: #e3b475; cursor: pointer" onclick="SubmitForm({{signal.signal_id}})">
+                    {% else %}
+                        <tr class="signal_info" style="cursor: pointer" onclick="SubmitForm({{signal.signal_id}})">
+                    {% endif %}
+                    <td style="text-align: center">{{signal.signal_description}}</td>
+                    <td>{{signal.signal_id}}</td>
+                    <td>{{signal.system}}</td>
+                    <td>{{signal.units}}</td>
+                    <td>{{signal.capture_mode}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <h2> Loading </h2>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+var info = JSON.parse({{existing_info | tojson}})
+console.log(info)
+$(document).ready(function() {
+    $('#availParams').DataTable({
+        aLengthMenu: [
+            [-1],
+            ["All"]
+        ],
+        iDisplayLength: -1,
+        "lengthChange": false
+    });
+} );
+
+
+
+function SubmitForm(signal_id){
+    let form = document.getElementById("rationalform")
+    document.getElementById("signal_id").value = signal_id
+    form.submit()
+    console.log(signal_id)
+}
+</script>
+
+{% endblock %}

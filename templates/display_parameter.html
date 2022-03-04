@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Display Parameter</title>
+
+    <style>
+        .parameter {
+            background-color: lightblue;
+            color: black;
+            margin: 10px;
+            padding: 10px;
+            font-size: 100px;
+            width: 100%;
+            text-align: center;
+        }
+        .start {
+            background-color: lightgreen;
+            color: black;
+            border: 1px solid black;
+            margin: 10px;
+            padding: 10px;
+            font-size: 50px;
+            text-align: center;
+            width: 100%;
+            display: inline-block;
+        }
+        .stop {
+            background-color: lightcoral;
+            color: black;
+            border: 1px solid black;
+            margin: 10px;
+            padding: 10px;
+            font-size: 50px;
+            text-align: center;
+            width: 100%;
+            display: inline-block;
+        }
+        .marker_a {
+            background-color: orange;
+            color: black;
+            border: 1px solid black;
+            margin: 10px;
+            padding: 10px;
+            font-size: 150px;
+            text-align: center;
+            width: 100%;
+            display: inline-block;
+        }
+        .marker_b {
+            background-color: orange;
+            color: black;
+            border: 1px solid black;
+            margin: 10px;
+            padding: 10px;
+            font-size: 150px;
+            text-align: center;
+            width: 100%;
+            display: inline-block;
+        }
+        .return {
+            background-color: deepskyblue;
+            color: black;
+            border: 1px solid black;
+            margin: 10px;
+            padding: 10px;
+            font-size: 50px;
+            text-align: center;
+            width: 100%;
+            display: inline-block;
+        }
+        .state {
+            color: black;
+            border: 1px solid black;
+            margin: 10px;
+            padding: 2px;
+            font-size: 12px;
+            text-align: center;
+            width: 100%;
+        }
+        .start {
+            color: lawngreen;
+            border: 1px solid black;
+            margin: 10px;
+            padding: 2px;
+            font-size: 5px;
+            text-align: center;
+            width: 100%;
+        }
+        .stop {
+            color: darkred;
+            border: 1px solid black;
+            margin: 10px;
+            padding: 2px;
+            font-size: 5px;
+            text-align: center;
+            width: 100%;
+        }
+        .last_image_frame
+        {
+            width: 100%;
+            height: 1200px;
+            border-width: 0;
+        }
+
+    </style>
+    <script type="application/javascript">
+        function hidden_frame_update(param, command){
+            let param_uri = '/parameter/' + param + '/' + command;
+
+            document.getElementById('hidden_frame').src = uri;
+            document.getElementById('state').class = command;
+        }
+    </script>
+</head>
+<body>
+    <div id="state" class="state"></div>
+
+    <span class="parameter"> {{ data }}</span>
+    <span class="return"><a href="/parameters/#{{ data }}">Return to List of Parameters</a> </span>
+    <span class="start"><a href="/parameter/{{data}}" onclick="hidden_frame_update({{ data }}, 'start')">START</a></span>
+    <span class="stop"><a href="/parameter/{{data}}" onclick="hidden_frame_update({{ data }}, 'stop')">STOP</a></span>
+    <span class="marker_a"><a href="/parameter/{{data}}" onclick="hidden_frame_update({{ data }}, 'marker_a')">A Marker</a></span>
+    <span class="marker_b"><a href="/parameter/{{data}}" onclick="hidden_frame_update({{ data }}, 'marker_b')">B Marker</a></span>
+    <iframe src="/image/last" title="last_image" class="last_image_frame"></iframe>
+    <div hidden><iframe id="hidden_frame" src=""></iframe></div>
+</body>
+</html>

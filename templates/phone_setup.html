@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container" style="color: white">
+        <div class="row">
+            <div class="col" style="text-align: center">
+                <h3> Previous IP's</h3>
+                <sub>Click to test</sub>
+                <br><br>
+                {% for phone in all_phones %}
+                <button class="btn btn-primary btn-cbh" onclick="test_ip('{{phone.phone_ip}}')" style="margin: 5px"><b>{{phone.friendly_name}}:</b> {{phone.phone_ip}}</button>
+                {% endfor %}
+             </div>
+            <div class="col">
+                <div style="text-align: center">
+                    <h3> Test View </h3>
+                </div>
+                <iframe name="video" id="iframe_video"></iframe>
+            </div>
+        </div>
+        <div class="row justify-content-start">
+            <div class="col-2">
+                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addPhone"><i class="fas fa-plus-square"></i>  Add A Phone</button>
+            </div>
+
+            <div class="col-2">
+                <button class="btn btn-danger" type="button" data-bs-toggle="modal" data-bs-target="#remove_phones"> <i class="fas fa-trash-alt"></i> Delete A Phone</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="addPhone" data-bs-keyboard="false" tabindex="-1"  aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h2 style="text-align: center"> Add new phone</h2>
+                <form method="POST">
+                    <div class="input-group input-group-sm mb-3">
+                        <span class="input-group-text" id="ip">IP Address</span>
+                        <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="ip" id="new_ip" name="new_ip">
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <span class="input-group-text" id="friendly">Friendly Name</span>
+                        <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="friendly" id="friendly_name" name="friendly_name">
+                    </div>
+                    <button type='submit' name="new_ip_btn" value="add_new" class="btn btn-success">Add Phone</button>
+                </form>
+            </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="modal fade" id="remove_phones" data-bs-keyboard="false" tabindex="-1"  aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h2 style="text-align: center">Click To Remove Phone</h2>
+                <form method="POST">
+                    {% for phone in all_phones %}
+                        <button class="btn btn-warning" name="remove_phone_ip" id="phone_ip" value="{{phone.phone_ip}}" style="margin: 10px">{{phone.friendly_name}}: {{phone.phone_ip}}</button>
+                    {% endfor %}
+                </form>
+            </div>
+        </div>
+      </div>
+    </div>
+
+
+    <script>
+        function test_ip(ip_addr) {
+            document.getElementById('iframe_video').src = 'http://' + ip_addr.toString() + ':4747/video?640x480';
+        }
+
+        function GoBack(){
+            window.history.back()
+        }
+    </script>
+{% endblock %}

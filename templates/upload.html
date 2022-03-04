@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block content %}
+<br>
+<div class="container">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="messages" style="text-align: center; color: #358135">
+                {% for message in messages %}
+                <h2> {{message}}</h2><br>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <div class="row" style="text-align: center; color: white">
+        <h2>Select Vehicle</h2>
+    </div>
+    <div id="errorText" style="color: white; text-align: center; background-color: #7c6f2d"></div><br><br>
+    <div class="row">
+        {% for vehicle in all_vehicles %}
+        <div class="col">
+             <button class="btn btn-primary btn-cbh" onclick="GetCompletedSignals({{vehicle.vehicle_id}})">
+                {{vehicle.vehicle_id}} ({{vehicle.model_year}} {{vehicle.vehicle_make}} {{vehicle.vehicle_model}}) -- {{vehicle.VIN}}
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    <hr>
+
+    <div class="container" id="fileContainer">
+        <div class="row">
+         <div class="col">
+            <h4 id="filecount" style="color: white"></h4>
+            <ul id="fileList"  style="background-color: white"></ul>
+        </div>
+        <div class="col" id="uploadButtonDiv" style="display: none; margin: auto; left: 25%">
+            <button class="btn btn-primary btn-cbh-big" id="uploadButton" onclick="UploadInformation(this.id)">
+                Upload All Files
+            </button>
+        </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="modal fade" id="uploadModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body" style="align-content: center; text-align: center">
+        <h2>Uploading Files</h2>
+          <div id="allFilesList">
+
+          </div>
+          <br>
+          <div id="error_readout" style="background-color: rgba(140,69,69,0.73); color: #3a0000; font-weight: bold; padding: 10px; display: none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    let gatheredData = false
+    let filesDiv = document.getElementById("allFilesList")
+    let errorSection = document.getElementById('errorText')
+
+    function GetCompletedSignals(vehicle_id){
+        let completedHolder = []
+        document.getElementById('filecount').innerHTML = ""
+        document.getElementById('fileList').innerHTML = ""
+         document.getElementById('errorText').innerHTML = ""
+        let fileCount = 0
+     $(function() {
+        $.getJSON('/upload/get_completed/' + vehicle_id,
+            function(data) {
+            if(data['error']){
+                errorSection.innerHTML = data['error']
+                return
+            }
+
+            if(data['uploaded']){
+                errorSection.innerHTML = "Already Completed Parameters<br>"
+                for(var i = 0; i < data['uploaded'].length; i ++){
+                    if(!completedHolder.includes(data['uploaded'][i])){
+                        completedHolder.push(data['uploaded'][i])
+                    }
+                }
+                 errorSection.innerHTML = errorSection.innerHTML + completedHolder
+            }
+
+             for(let [key, value] of Object.entries(data)) {
+                 if(key === "uploaded" || completedHolder.includes(value)){
+                     continue
+                 }
+                 let newList = document.createElement('li')
+                 document.getElementById('fileList').appendChild(newList)
+                 newList.innerHTML = "Param: " + value + " : " + key
+                 fileCount += 1;
+             }
+
+                if(fileCount > 0){
+                    document.getElementById('uploadButton').id = vehicle_id
+                    document.getElementById('uploadButtonDiv').style.display = 'block'
+                    document.getElementById('filecount').innerHTML = "File Count: " + fileCount
+                } else {
+                    errorSection.innerHTML = errorSection.innerHTML + "<br>" + "<h5>No New Parameters To Upload</h5>"
+                }
+        });
+            return false
+        });
+    }
+
+    function UploadInformation(vid){
+            $.ajax({
+                type: "POST",
+                url: "/upload/upload_files/" + vid,
+                contentType: "application/json"
+            });
+             PullLive()
+    }
+
+    function PullLive(){
+        $('#uploadModal').modal('toggle')
+        filesDiv.innerHTML = ""
+        window.pullInterval = window.setInterval(function(){$.ajax({
+                url: '/upload/status',
+                type: 'GET',
+                success: function(data) {
+                    // start stuff
+                    if(!gatheredData){
+                        console.log("Adding rows")
+
+                        for(var key in data){
+                            if(key !== 'complete') {
+                                console.log("adding row for " + key)
+                                filesDiv.innerHTML = filesDiv.innerHTML + "<div class='unfinished-upload' id='" + key + "'>" + key + "</div>"
+                            }
+                        }
+                        gatheredData = true
+                    }
+
+                   // complete stuff
+                    if(data['complete'] === true){
+                        console.log("should be done here")
+                        window.clearInterval(window.pullInterval)
+                        $('#uploadModal').modal('toggle')
+                        window.location="{{url_for('upload')}}"
+                    }
+
+                    // active stuff
+                    Object.keys(data).forEach(function(k){
+                        if(data[k] === true){
+                            document.getElementById(k).classList.remove('unfinished-upload')
+                            document.getElementById(k).classList.add('finished-upload')
+                        }
+                    });
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            })}, 500);
+    }
+</script>
+
+<!--window.clearInterval(window.pullInterval)-->
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<br>
+<div class="container">
+    <div class="row" style="text-align: center; color: white">
+        <h2>Select Vehicle</h2>
+    </div>
+    <div class="row">
+        {% for vehicle in all_vehicles %}
+        <div class="col">
+             <button class="btn btn-primary btn-cbh" onclick="GetCompletedSignals({{vehicle.vehicle_id}})">
+                {{vehicle.vehicle_id}} ({{vehicle.model_year}} {{vehicle.vehicle_make}} {{vehicle.vehicle_model}}) -- {{vehicle.VIN}}
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    <hr>
+    <div class="row" id="completed_id_list"></div>
+
+
+</div>
+
+
+<script>
+    let completed_id_list = document.getElementById("completed_id_list")
+    function GetCompletedSignals(vehicle_id){
+        completed_id_list.innerHTML = ""
+     $(function() {
+        $.getJSON('/playback/get_completed/' + vehicle_id,
+            function(data) {
+            if(data['signal_list'][0] == null){
+                return
+            }
+            for(let [key, value] of Object.entries(data['signal_list'][0])){
+               completed_id_list.innerHTML = "<div class='col'><button class='btn btn-primary' onclick='GetSignalAssets("+
+                   vehicle_id + "," + key +
+                   ")'>" +
+                   value +
+                   "</button>"
+            }
+        });
+            return false
+        });
+    }
+
+    function GetSignalAssets(vehicle_id, signal_id){
+     $(function() {
+        $.getJSON('/playback/get_assets/' + vehicle_id + '/' + signal_id)})
+
+    }
+</script>
+
+
+{% endblock %}

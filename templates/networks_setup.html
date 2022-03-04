@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Network Setup for Vehicle ID: {{ vehicle_id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .status_error{
+            text-decoration: red;
+        }
+    </style>
+</head>
+<body>
+<form action="/network_setup/{{ vehicle_id }}" id="network_form" method="post">
+        <div class="can_busses">
+            <label for="busses_{{ can_bus }}">Comma Separated List of CAN Bus Interfaces
+                <input type="text" value="{{ can_bus }}" name="can_busses">
+            </label>
+        </div>
+    {% if net_init_status == false %}
+        <div class="status_error">
+            {{ status_error_message }}
+        </div>
+    {% endif %}
+<input type="submit" name="Submit">
+</form>
+
+<form action="/network_setup/{{ vehicle_id }}" id="can_bus_check_boxes" method="post">
+    {% for check_box in network_check_boxes %}
+        <label for="{{ check_box['name'] }}">
+            <input type="checkbox" {{ check_box['checked'] }} name="{{ check_box['name'] }}"> {{ check_box['name'] }} <br>
+        </label>
+    {% endfor %}
+<input type="submit" name="Submit Networks">
+</form>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+[Unit]
+Description=Prime GPS Readout
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/etc/gps_setup.sh
+
+[Install]
+WantedBy=multi-user.target

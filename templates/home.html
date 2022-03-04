@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+        <div class="col" style="color: white; text-align: center;">
+            <h2><span style="color: #36ba97; margin-right:-10px">can</span> SNARE</h2>
+        </div>
+<div class="container offset-bg">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="messages" style="text-align: center; color: #358135">
+                {% for message in messages %}
+                <h2> {{message}}</h2><br>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="row row-cols-auto navbar-row">
+        <div class="col">
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-car"></i> Vehicles
+              </button>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton2">
+                <li><a class="dropdown-item active" href="/vehicle_setup"><i class="fas fa-plus-square"></i>  Add a Vehicle</a></li>
+                <li><a class="dropdown-item" href="/vehicles"><i class="fas fa-list"></i>  View All Vehicles</a> </li>
+              </ul>
+            </div>
+        </div>
+        <div class="col">
+            <div class="dropdown">
+              <a href="/update_phones/"><button class="btn btn-secondary" type="button" >
+                <i class="fas fa-mobile-alt"></i> Configure/Test Phones
+              </button></a>
+            </div>
+        </div>
+        <div class="col">
+            <div class="dropdown">
+              <a href="/edit_parameters"><button class="btn btn-secondary" type="button" >
+                <i class="fas fa-edit"></i> View/Edit Parameters
+              </button></a>
+            </div>
+        </div>
+{#        <div class="col">#}
+{#            <div class="dropdown">#}
+{#              <a href="/carhax"><button class="btn btn-secondary" type="button" >#}
+{#                <i class="fas fa-mobile-alt"></i> CarHaxx#}
+{#              </button></a>#}
+{#            </div>#}
+{#        </div>#}
+    </div>
+</div>
+
+{% endblock %}
